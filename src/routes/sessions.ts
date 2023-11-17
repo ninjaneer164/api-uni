@@ -12,9 +12,12 @@ router
   // get sessions
   .get(async (req: Request, res: Response) => {
     if (req.query && Object.keys(req.query).length > 0) {
-      // get sessions by roleGuid and/or userGuid
       const { roleGuid, userGuid } = req.query;
-      if (validateGuid(roleGuid as string)) {
+      if (
+        validateGuid(roleGuid as string) &&
+        !validateGuid(userGuid as string)
+      ) {
+        // get seeeions by roldGuid
         Sessions.getSessionsByRoleGuid(roleGuid as string)
           .then((sessions) => {
             res
@@ -24,7 +27,11 @@ router
           .catch((e) => {
             res.status(500).send(e);
           });
-      } else if (validateGuid(userGuid as string)) {
+      } else if (
+        !validateGuid(roleGuid as string) &&
+        validateGuid(userGuid as string)
+      ) {
+        // get seeeions by userGuid
         Sessions.getSessionByUserGuid(userGuid as string)
           .then((session) => {
             res.json(Utils.removeProperties(session)).send();
@@ -32,7 +39,11 @@ router
           .catch((e) => {
             res.status(500).send(e);
           });
-      } else {
+      } else if (
+        validateGuid(roleGuid as string) &&
+        validateGuid(userGuid as string)
+      ) {
+        // get sessions by roldGuid and userGuid
         Sessions.getSessionByRoleGuidAndUserGuid(
           roleGuid as string,
           userGuid as string
@@ -43,6 +54,8 @@ router
           .catch((e) => {
             res.status(500).send(e);
           });
+      } else {
+        res.status(500).send('missing or invalid roleGuid/userGuid');
       }
     } else {
       // get all sessions
