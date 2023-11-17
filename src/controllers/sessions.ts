@@ -34,4 +34,9 @@ export namespace Sessions {
       throw new Error('specified session does not exist');
     }
   };
+
+  export const getSessions = async (): Promise<Session[]> => {
+    const prisma = PrismaClient.instance;
+    return prisma.session.findMany();
+  };
 }

@@ -11,8 +11,8 @@ const rolesRouter = require('./routes/roles');
 app.use('/api', rolesRouter);
 
 // sessions
-// const sessionsRouter = require('./routes/sessions');
-// app.use('/api', sessionsRouter);
+const sessionsRouter = require('./routes/sessions');
+app.use('/api', sessionsRouter);
 
 // users
 const usersRouter = require('./routes/users');
@@ -28,7 +28,7 @@ module.exports = app;
 Create query to get session data without user 
 Create query to get session data with user and roles 
   Create mutation to create roles 
-Create mutation to create sessions with users 
+  Create mutation to create sessions with users 
   Create mutation to edit user information 
   Create mutation to edit roles 
   Create mutation to delete the session 

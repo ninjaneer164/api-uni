@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { validate as uuidValidate } from 'uuid';
+import { validateGuid } from './guid';
 
 export const validateSession = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const userId = req.body;
-  if (!!userId && !isNaN(parseInt(userId))) {
+  const { userGuid } = req.body;
+  if (validateGuid(userGuid)) {
     next();
   } else {
     res.status(400).send('missig or invalid user id');

@@ -1,15 +1,28 @@
 import { Request, Response, Router } from 'express';
 import { validateSession, validateSessionGuid } from '../validators/sessions';
 import { Sessions } from '../controllers';
+import { Utils } from '../utils';
 
 const path = 'sessions';
 const router: Router = require('express').Router();
 
 router
   .route(`/${path}`)
+  // get all sessions
+  .get(async (req: Request, res: Response) => {
+    Sessions.getSessions()
+      .then((sessions) => {
+        res
+          .json(sessions.map((session) => Utils.removeProperties(session)))
+          .send();
+      })
+      .catch((e) => {
+        res.sendStatus(500);
+      });
+  })
   // create new session
   .put([validateSession], async (req: Request, res: Response) => {
-    const userGuid = req.body.userGuid;
+    const { userGuid } = req.body;
     Sessions.createSession(userGuid)
       .then((session) => {
         if (session) {
