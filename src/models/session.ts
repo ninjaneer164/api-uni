@@ -1,5 +1,5 @@
-export interface Session {
-  id: number;
-  guid: string;
+import { BaseClass } from './base';
+
+export interface Session extends BaseClass {
   userGuid: string;
 }

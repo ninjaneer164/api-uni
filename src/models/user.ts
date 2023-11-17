@@ -1,7 +1,7 @@
-export interface User {
+import { BaseClass } from './base';
+
+export interface User extends BaseClass {
   firstName: string;
-  guid: string;
-  id: number;
   lastName: string;
   roleId: number;
 }
