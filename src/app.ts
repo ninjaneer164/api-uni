@@ -23,14 +23,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
-/*
-Create query to get session data without user 
-Create query to get session data with user and roles 
-  Create mutation to create roles 
-  Create mutation to create sessions with users 
-  Create mutation to edit user information 
-  Create mutation to edit roles 
-  Create mutation to delete the session 
-  Create mutation to delete roles 
-*/
