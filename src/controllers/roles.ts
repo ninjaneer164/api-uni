@@ -1,30 +1,39 @@
-import { PrismaClient, Role } from '../models';
-import { v4 as uuidv4 } from 'uuid';
+import { PrismaClient } from '../models/prisma.js';
+import { RoleCreateInput, RoleEditInput } from '../models/role.js';
+import { User } from '../models/user.js';
+import { Utils } from '../utils/utils.js';
 
 export namespace Roles {
-  export const createRole = async (role: Role): Promise<Role> => {
+  export const createRole = async (_: any, args: { data: RoleCreateInput }) => {
     const prisma = PrismaClient.instance;
-    const r = await prisma.role.findUnique({
+    const { name } = args.data;
+
+    if (Utils.isNullOrEmpty(name)) {
+      throw new Error('missing "name!"');
+    }
+
+    const role = await prisma.role.findUnique({
       where: {
-        name: role.name,
+        name,
       },
     });
-    if (r) {
+    if (role) {
       throw new Error('role with the same name already exists');
     } else {
       return prisma.role.create({
         data: {
-          ...role,
-          guid: uuidv4(),
+          name,
         },
       });
     }
   };
 
-  export const deleteRole = async (guid: string): Promise<Role> => {
+  export const deleteRole = async (_: any, args: { id: string }) => {
     const prisma = PrismaClient.instance;
+    const { id } = args;
+
     const role = await prisma.role.findUnique({
-      where: { guid },
+      where: { id },
     });
     if (role) {
       const users = await prisma.user.findFirst({
@@ -37,37 +46,62 @@ export namespace Roles {
           'specified role cannot be deleted because it is assigned to one or more users'
         );
       } else {
-        const result = await prisma.role.delete({
+        return prisma.role.delete({
           where: {
-            guid,
+            id: role.id,
           },
         });
-        return result;
       }
     } else {
       throw new Error('specified role does not exist');
     }
   };
 
-  export const editRole = async (guid: string, role: Role): Promise<Role> => {
+  export const editRole = async (_: any, args: { data: RoleEditInput }) => {
     const prisma = PrismaClient.instance;
-    const r = await prisma.role.findUnique({
-      where: { guid },
+    const { id } = args.data;
+
+    const role = await prisma.role.findUnique({
+      where: { id },
     });
-    if (r) {
-      return prisma.role.update({ data: role, where: { guid } });
+    if (role) {
+      return prisma.role.update({
+        data: {
+          ...role,
+          ...Utils.removeProperties(args.data),
+        },
+        where: { id },
+      });
     } else {
       throw new Error('specified role does not exist');
     }
   };
 
-  export const getRole = async (guid: string): Promise<Role | null> => {
+  export const getRoleById = async (_: any, args: { id: string }) => {
     const prisma = PrismaClient.instance;
-    return prisma.role.findUnique({ where: { guid } });
+    const { id } = args;
+    const role = await prisma.role.findUnique({ where: { id } });
+    return role ?? null;
   };
 
-  export const getRoles = async (): Promise<Role[]> => {
+  export const getRoleByName = async (_: any, args: { name: string }) => {
+    const prisma = PrismaClient.instance;
+    const { name } = args;
+    const role = prisma.role.findUnique({ where: { name } });
+    return role ?? null;
+  };
+
+  export const getRoles = async () => {
     const prisma = PrismaClient.instance;
     return prisma.role.findMany();
+  };
+
+  export const getUserRole = (user: User) => {
+    const prisma = PrismaClient.instance;
+    return prisma.role.findUnique({
+      where: {
+        id: user.roleId,
+      },
+    });
   };
 }

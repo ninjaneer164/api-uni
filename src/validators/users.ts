@@ -1,16 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateGuid } from './guid';
+import { validateGuid } from './guid.js';
 
 export const validateUser = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { guid } = req.params;
+  const { id } = req.params;
   const user = req.body;
   if (!!user) {
-    if (user.guid !== guid) {
-      res.status(400).send('cannot modify guid');
+    if (user.id !== id) {
+      res.status(400).send('cannot modify id');
     } else {
       const errors = ['firstName', 'lastName', 'roleId'].reduce(
         (e: string[], prop: string) => {
@@ -40,10 +40,10 @@ export const validateUserGuid = (
   res: Response,
   next: NextFunction
 ) => {
-  const { guid } = req.params;
-  if (validateGuid(guid)) {
+  const { id } = req.params;
+  if (validateGuid(id)) {
     next();
   } else {
-    res.status(400).send('missing or invalid user guid');
+    res.status(400).send('missing or invalid user id');
   }
 };

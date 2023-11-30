@@ -1,16 +1,16 @@
 import { NextFunction, Request, Response } from 'express';
-import { validateGuid } from './guid';
+import { validateGuid } from './guid.js';
 
 export const validateRole = (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { guid } = req.params;
+  const { id } = req.params;
   const role = req.body;
   if (!!role) {
-    if (role.guid !== guid) {
-      res.status(400).send('cannot modify guid');
+    if (role.id !== id) {
+      res.status(400).send('cannot modify id');
     } else {
       if (!!role.name) {
         next();
@@ -28,10 +28,10 @@ export const validateRoleGuid = (
   res: Response,
   next: NextFunction
 ) => {
-  const { guid } = req.params;
-  if (validateGuid(guid)) {
+  const { id } = req.params;
+  if (validateGuid(id)) {
     next();
   } else {
-    res.status(400).send('missing or invalid role guid');
+    res.status(400).send('missing or invalid role id');
   }
 };

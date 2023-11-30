@@ -1,61 +1,88 @@
-import { PrismaClient, Role, Session } from '../models';
-import { v4 as uuidv4 } from 'uuid';
+import { PrismaClient } from '../models/prisma.js';
+import { SessionCreateInput } from '../models/session.js';
+import { User } from '../models/user.js';
 
 export namespace Sessions {
-  export const createSession = async (userGuid: string): Promise<Session> => {
+  export const createSession = async (
+    _: any,
+    args: { data: SessionCreateInput }
+  ) => {
     const prisma = PrismaClient.instance;
-    const session = await prisma.session.findUnique({
+    const { userId } = args.data;
+
+    const user = await prisma.user.findUnique({
       where: {
-        userGuid,
+        id: userId,
       },
     });
-    if (session) {
-      throw new Error('session for the specified user already exists');
-    } else {
-      return prisma.session.create({
-        data: {
-          guid: uuidv4(),
-          userGuid,
+    if (user) {
+      const session = await prisma.session.findUnique({
+        where: {
+          userId,
         },
       });
+      if (session) {
+        throw new Error('session for the specified user already exists');
+      } else {
+        return prisma.session.create({
+          data: {
+            userId,
+          },
+        });
+      }
+    } else {
+      throw new Error('specified user does not exists');
     }
   };
 
-  export const deleteSession = async (guid: string): Promise<Session> => {
+  export const deleteSession = async (_: any, args: { id: string }) => {
     const prisma = PrismaClient.instance;
-    const session = await prisma.session.delete({
+    const { id } = args;
+
+    const session = await prisma.session.findUnique({
       where: {
-        guid,
+        id,
       },
     });
     if (session) {
-      return session;
+      return prisma.session.delete({
+        where: {
+          id,
+        },
+      });
     } else {
       throw new Error('specified session does not exist');
     }
   };
 
-  export const getSessionByRoleGuidAndUserGuid = async (
-    roleGuid: string,
-    userGuid: string
-  ): Promise<Session | null> => {
+  export const getSessionById = (_: any, args: { id: string }) => {
     const prisma = PrismaClient.instance;
+    return prisma.session.findUnique({ where: { id: args.id } });
+  };
+
+  export const getSessionByRoleIdAndUserId = async (
+    _: any,
+    args: { roleId: string; userId: string }
+  ) => {
+    const prisma = PrismaClient.instance;
+    const { roleId, userId } = args;
+
     const role = await prisma.role.findUnique({
       where: {
-        guid: roleGuid,
+        id: roleId,
       },
     });
     if (role) {
       const user = await prisma.user.findUnique({
         where: {
-          guid: userGuid,
+          id: userId,
           roleId: role.id,
         },
       });
       if (user) {
         return prisma.session.findUnique({
           where: {
-            userGuid: user.guid,
+            userId,
           },
         });
       } else {
@@ -66,49 +93,17 @@ export namespace Sessions {
     }
   };
 
-  export const getSessionByUserGuid = async (
-    userGuid: string
-  ): Promise<Session | null> => {
-    const prisma = PrismaClient.instance;
-    return prisma.session.findUnique({
-      where: {
-        userGuid,
-      },
-    });
-  };
-
-  export const getSessions = async (): Promise<Session[]> => {
+  export const getSessions = () => {
     const prisma = PrismaClient.instance;
     return prisma.session.findMany();
   };
 
-  export const getSessionsByRoleGuid = async (
-    roleGuid: string
-  ): Promise<Session[]> => {
+  export const getUserSession = (user: User) => {
     const prisma = PrismaClient.instance;
-    const role = await prisma.role.findUnique({
-      where: { guid: roleGuid },
+    return prisma.session.findUnique({
+      where: {
+        userId: user.id,
+      },
     });
-    if (role) {
-      const users = await prisma.user.findMany({
-        where: {
-          roleId: role.id,
-        },
-      });
-      if (users && users.length > 0) {
-        const userGuids = users.map((user) => user.guid);
-        return prisma.session.findMany({
-          where: {
-            userGuid: {
-              in: userGuids,
-            },
-          },
-        });
-      } else {
-        return [];
-      }
-    } else {
-      throw new Error('specified role does not exist');
-    }
   };
 }

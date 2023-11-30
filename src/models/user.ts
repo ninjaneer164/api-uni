@@ -1,7 +1,11 @@
 import { BaseClass } from './base';
 
-export interface User extends BaseClass {
+export interface UserCreateInput {
   firstName: string;
   lastName: string;
-  roleId: number;
+  roleId: string;
 }
+
+export type UserEditInput = BaseClass & UserCreateInput;
+
+export type User = BaseClass & UserCreateInput;

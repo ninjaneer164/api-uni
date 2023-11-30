@@ -1,5 +1,7 @@
 import { BaseClass } from './base';
 
-export interface Session extends BaseClass {
-  userGuid: string;
+export interface SessionCreateInput {
+  userId: string;
 }
+
+export type Session = BaseClass & SessionCreateInput;
