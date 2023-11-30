@@ -9,7 +9,7 @@ export namespace Roles {
     const { name } = args.data;
 
     if (Utils.isNullOrEmpty(name)) {
-      throw new Error('missing "name!"');
+      throw new Error('missing "name"');
     }
 
     const role = await prisma.role.findUnique({
